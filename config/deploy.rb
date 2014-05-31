@@ -11,6 +11,8 @@ role :app, "162.252.242.159"                # This may be the same as your `Web`
 # if you want to clean up old releases on each deploy uncomment this:
  after "deploy:restart", "deploy:cleanup"
 
+set :app_name, application
+
 namespace :foreman do
   desc "Export the Procfile to Ubuntu's upstart scripts"
   task :export, :roles => :app do
