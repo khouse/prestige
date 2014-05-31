@@ -11,14 +11,30 @@ role :app, "162.252.242.159"                # This may be the same as your `Web`
 # if you want to clean up old releases on each deploy uncomment this:
  after "deploy:restart", "deploy:cleanup"
 
-# if you're still using the script/reaper helper you will need
-# these http://github.com/rails/irs_process_scripts
+namespace :foreman do
+  desc "Export the Procfile to Ubuntu's upstart scripts"
+  task :export, :roles => :app do
+    run "cd #{current_path} && #{sudo} foreman export --app=#{app_name} --user=www-data -p 5000 -f Procfile upstart /etc/init"
+  end
 
-# If you are using Passenger mod_rails uncomment this:
-# namespace :deploy do
-#   task :start do ; end
-#   task :stop do ; end
-#   task :restart, :roles => :app, :except => { :no_release => true } do
-#     run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}"
-#   end
-# end
+  desc "Start the application services"
+  task :start, :roles => :app do
+    run "#{sudo} service #{app_name} start"
+  end
+
+  desc "Stop the application services"
+  task :stop, :roles => :app do
+    run "#{sudo} service #{app_name} stop"
+  end
+
+  desc "Restart the application services"
+  task :restart, :roles => :app do
+    run "#{sudo} service #{app_name} start || #{sudo} service #{app_name} restart"
+  end
+end
+
+namespace :deploy do
+  task :restart, :roles => :app do
+    foreman.restart # uncomment this (and comment line above) if we need to read changes to the procfile
+  end
+end
